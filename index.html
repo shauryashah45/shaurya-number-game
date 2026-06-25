@@ -1,0 +1,248 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Number Guessing Game</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#1e1e2f;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+
+.container{
+    max-width:500px;
+    margin:auto;
+    background:#2d2d44;
+    padding:20px;
+    border-radius:15px;
+}
+
+button{
+    padding:10px 15px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+input{
+    padding:10px;
+    width:120px;
+    text-align:center;
+    border-radius:8px;
+    border:none;
+}
+
+#message{
+    margin-top:15px;
+    font-size:18px;
+}
+
+.stats{
+    margin-top:20px;
+    background:#3a3a5a;
+    padding:10px;
+    border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎮 Advanced Number Guessing Game</h1>
+
+    <h3>Select Difficulty</h3>
+
+    <button onclick="startGame('easy')">Easy</button>
+    <button onclick="startGame('medium')">Medium</button>
+    <button onclick="startGame('hard')">Hard</button>
+
+    <div id="gameArea" style="display:none; margin-top:20px;">
+        <p id="rangeText"></p>
+        <p id="attemptText"></p>
+
+        <input type="number" id="guessInput" placeholder="Enter Guess">
+        <button onclick="checkGuess()">Guess</button>
+
+        <div id="message"></div>
+    </div>
+
+    <div class="stats">
+        <h3>📊 Statistics</h3>
+
+        <p>Games Played: <span id="played">0</span></p>
+        <p>Games Won: <span id="won">0</span></p>
+        <p>Total Score: <span id="totalScore">0</span></p>
+        <p>High Score: <span id="highScore">0</span></p>
+
+        <button onclick="resetData()">Reset Stats</button>
+    </div>
+</div>
+
+<script>
+
+let maxNum;
+let maxAttempts;
+let secretNumber;
+let attemptsUsed;
+
+// Load saved data
+let gamesPlayed = Number(localStorage.getItem("gamesPlayed")) || 0;
+let gamesWon = Number(localStorage.getItem("gamesWon")) || 0;
+let totalScore = Number(localStorage.getItem("totalScore")) || 0;
+let highScore = Number(localStorage.getItem("highScore")) || 0;
+
+function saveStats(){
+    localStorage.setItem("gamesPlayed", gamesPlayed);
+    localStorage.setItem("gamesWon", gamesWon);
+    localStorage.setItem("totalScore", totalScore);
+    localStorage.setItem("highScore", highScore);
+}
+
+function startGame(level){
+
+    if(level==="easy"){
+        maxNum = 50;
+        maxAttempts = 12;
+    }
+    else if(level==="medium"){
+        maxNum = 100;
+        maxAttempts = 9;
+    }
+    else{
+        maxNum = 200;
+        maxAttempts = 6;
+    }
+
+    secretNumber = Math.floor(Math.random() * maxNum) + 1;
+    attemptsUsed = 0;
+
+    document.getElementById("gameArea").style.display = "block";
+
+    document.getElementById("rangeText").innerHTML =
+        `I'm thinking of a number between 1 and ${maxNum}`;
+
+    updateAttempts();
+
+    document.getElementById("message").innerHTML = "";
+    document.getElementById("guessInput").value = "";
+}
+
+function updateAttempts(){
+    document.getElementById("attemptText").innerHTML =
+        `Attempts: ${attemptsUsed}/${maxAttempts}`;
+}
+
+function checkGuess(){
+
+    let guess = parseInt(document.getElementById("guessInput").value);
+
+    if(isNaN(guess)){
+        showMessage("❌ Enter a valid number");
+        return;
+    }
+
+    if(guess < 1 || guess > maxNum){
+        showMessage(`⚠ Enter a number between 1 and ${maxNum}`);
+        return;
+    }
+
+    attemptsUsed++;
+    updateAttempts();
+
+    if(guess === secretNumber){
+
+        let score = (maxAttempts - attemptsUsed + 1) * 10;
+
+        gamesPlayed++;
+        gamesWon++;
+        totalScore += score;
+
+        if(score > highScore){
+            highScore = score;
+        }
+
+        updateStats();
+
+        showMessage(
+            `🎉 Correct!<br>
+            You guessed it in ${attemptsUsed} attempts.<br>
+            Score Earned: ${score}`
+        );
+
+        return;
+    }
+
+    if(guess < secretNumber){
+        showMessage("📈 Too Low!");
+    }else{
+        showMessage("📉 Too High!");
+    }
+
+    if(attemptsUsed === 3){
+
+        if(secretNumber % 2 === 0){
+            document.getElementById("message").innerHTML +=
+                "<br>💡 Hint: The number is EVEN";
+        }else{
+            document.getElementById("message").innerHTML +=
+                "<br>💡 Hint: The number is ODD";
+        }
+    }
+
+    if(attemptsUsed >= maxAttempts){
+
+        gamesPlayed++;
+        updateStats();
+
+        showMessage(
+            `💥 Game Over!<br>
+            The number was ${secretNumber}`
+        );
+    }
+
+    document.getElementById("guessInput").value = "";
+}
+
+function showMessage(text){
+    document.getElementById("message").innerHTML = text;
+}
+
+function updateStats(){
+
+    document.getElementById("played").innerText = gamesPlayed;
+    document.getElementById("won").innerText = gamesWon;
+    document.getElementById("totalScore").innerText = totalScore;
+    document.getElementById("highScore").innerText = highScore;
+
+    saveStats();
+}
+
+function resetData(){
+
+    localStorage.clear();
+
+    gamesPlayed = 0;
+    gamesWon = 0;
+    totalScore = 0;
+    highScore = 0;
+
+    updateStats();
+
+    alert("Statistics reset successfully!");
+}
+
+// Load saved stats on startup
+updateStats();
+
+</script>
+
+</body>
+</html>
+```
